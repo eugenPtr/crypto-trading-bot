@@ -1,5 +1,6 @@
 # Project specific files
 bisnita.py
+data/*
 
 
 # Byte-compiled / optimized / DLL files
