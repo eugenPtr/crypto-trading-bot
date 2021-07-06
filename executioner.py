@@ -22,6 +22,7 @@ class Executioner:
 
         wallet = {}
         for token in TRADED_TOKENS:
+            balance = self._client.get_asset_balance(token)
             wallet[token] = float(self._client.get_asset_balance(token)['free'])
         return wallet
 
@@ -35,12 +36,15 @@ class Executioner:
         '''
 
         klines_df_dict = {}
+        open_time_of_last_kline = 0
         for token in TRADED_TOKENS:
             klines_df = self._get_bootstrap_klines_df(token, file_path + token + ".csv")
+            open_time_of_last_kline = int(klines_df.iloc[-1]['OpenTime'])
             klines_df['OpenTime'] = pd.to_datetime(klines_df['OpenTime'], unit='ms')
             klines_df.set_index('OpenTime', drop=True, inplace=True)
             klines_df_dict[token] = klines_df
 
+        self._open_time_of_last_kline = open_time_of_last_kline
         dataset = bisnita.build_dataset(klines_df_dict)
         return dataset
 
@@ -54,12 +58,16 @@ class Executioner:
         '''
 
         klines_df_dict = {}
+        open_time_of_last_kline = 0
         for token in TRADED_TOKENS:
-            df = self._get_and_save_latest_klines_dataframe(token, file_path + token + ".csv")
+            start_time = self._open_time_of_last_kline + 60000
+            df = self._get_and_save_latest_klines_dataframe(token, file_path + token + ".csv", start_time)
+            open_time_of_last_kline = int(df.iloc[-1]['OpenTime'])
             df['OpenTime'] = pd.to_datetime(df['OpenTime'], unit='ms')
             df.set_index('OpenTime', drop=True, inplace=True)
             klines_df_dict[token] = df
 
+        self._open_time_of_last_kline = open_time_of_last_kline
         dataset = bisnita.build_dataset(klines_df_dict)
         return dataset
 
@@ -73,18 +81,18 @@ class Executioner:
 
     ############ PRIVATE METHODS ####################################
 
-    def _get_and_save_latest_klines_dataframe(self, token, filename):
+    def _get_and_save_latest_klines_dataframe(self, token, filename, start_time):
 
-        klines = self._get_token_klines_since_time(token, self._open_time_of_last_kline + 60000)
+        klines = self._get_token_klines_since_time(token, start_time)
         df = pd.DataFrame(columns=COLS_IN_USE)
         while klines:
             new_df = pd.DataFrame(klines, columns=COL_NAMES)
             new_df = new_df[COLS_IN_USE]
             new_df.to_csv(filename, index=False, header=None, mode="a")
-            self._open_time_of_last_kline = int(new_df.iloc[-1]['OpenTime'])
             frames = [df, new_df]
             df = pd.concat(frames, sort=False)
-            klines = self._get_token_klines_since_time(token, self._open_time_of_last_kline + 60000)
+            start_time = int(new_df.iloc[-1]['OpenTime']) + 60000
+            klines = self._get_token_klines_since_time(token, start_time)
 
         return df
 
@@ -101,9 +109,9 @@ class Executioner:
             df = df[COLS_IN_USE]
             df.to_csv(filename, index=False)
 
-        self._open_time_of_last_kline = int(df.iloc[-1]['OpenTime'])
+        start_time = int(df.iloc[-1]['OpenTime']) + 60000
 
-        new_df = self._get_and_save_latest_klines_dataframe(token, filename)
+        new_df = self._get_and_save_latest_klines_dataframe(token, filename, start_time)
         frames = [df, new_df]
         df = pd.concat(frames, sort=False)
 
@@ -118,3 +126,16 @@ class Executioner:
             startTime=time_as_ms
         )
         return klines
+
+    def market_sell_order(self, symbol, quantity):
+        order = self._client.order_market_sell(
+            symbol=symbol,
+            quantity=quantity)
+        return order
+
+    def market_buy_order(self, symbol, quantity):
+        order = self._client.order_market_sell(
+            symbol=symbol,
+            quantity=quantity)
+        return order
+
