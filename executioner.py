@@ -100,15 +100,15 @@ class Executioner:
 
         # Get stored data or restore historic data
         try:
-            df = pd.read_csv(filename)
+            df = pd.read_csv(filename, header=None, names=COL_NAMES)
         except:
             # TODO: Replace fetching last 1k minutes with fetching all data since a given date and time
             klines = self._client.get_historical_klines(token + QUOTE_TOKEN, self._client.KLINE_INTERVAL_1MINUTE,
                                                         "1000 minutes ago UTC")
             df = pd.DataFrame(klines, columns=COL_NAMES)
-            df.to_csv(filename, index=False)
-            df = df[COLS_IN_USE]
+            df.to_csv(filename, index=False, header=False)
 
+        df = df[COLS_IN_USE]
         start_time = int(df.iloc[-1]['OpenTime']) + 60000
 
         new_df = self._get_and_save_latest_klines_dataframe(token, filename, start_time)

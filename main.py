@@ -70,11 +70,13 @@ if __name__ == '__main__':
             target = bisnita.următoarea_combinație(weights.iloc[-1], portfolio, quote_token_balance, prices)
 
             # Calculate buy coefficient
-            portfolioValue = (portfolio * prices).sum() + quote_token_balance
-            print("Portfolio value: ", portfolioValue)
-            current_ratio = (portfolio * prices) / portfolioValue
-            amount_to_buy = (target - current_ratio).clip(lower=0).sum() * portfolioValue
-            buy_scaling = BUY_SCALING_STATIC * np.clip(quote_token_balance/(amount_to_buy+1e-100), a_max=1.0, a_min=None)
+            # portfolioValue = (portfolio * prices).sum() + quote_token_balance
+            # print("Portfolio value: ", portfolioValue)
+            # current_ratio = (portfolio * prices) / portfolioValue
+            # amount_to_buy = (weights.iloc[-1] - current_ratio).clip(lower=0).sum() * portfolioValue
+            amount_to_buy = (target - (portfolio * prices)).clip(lower=0).sum()
+            if amount_to_buy > 0:
+                buy_scaling = BUY_SCALING_STATIC * np.clip(quote_token_balance/amount_to_buy, a_max=1.0, a_min=None)
 
             #Buy
             for base_token in TRADED_TOKENS:
