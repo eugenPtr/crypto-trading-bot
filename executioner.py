@@ -71,13 +71,13 @@ class Executioner:
         dataset = bisnita.build_dataset(klines_df_dict)
         return dataset
 
-    def get_sell_token_balance(self):
+    def get_quote_token_balance(self):
 
         '''
 
         :return: the reference token used as pair for the traded tokens. i.e. USDT in BTCUSDT
         '''
-        return float(self._client.get_asset_balance(SELL_TOKEN)['free'])
+        return float(self._client.get_asset_balance(QUOTE_TOKEN)['free'])
 
     ############ PRIVATE METHODS ####################################
 
@@ -103,11 +103,11 @@ class Executioner:
             df = pd.read_csv(filename)
         except:
             # TODO: Replace fetching last 1k minutes with fetching all data since a given date and time
-            klines = self._client.get_historical_klines(token + SELL_TOKEN, self._client.KLINE_INTERVAL_1MINUTE,
+            klines = self._client.get_historical_klines(token + QUOTE_TOKEN, self._client.KLINE_INTERVAL_1MINUTE,
                                                         "1000 minutes ago UTC")
             df = pd.DataFrame(klines, columns=COL_NAMES)
-            df = df[COLS_IN_USE]
             df.to_csv(filename, index=False)
+            df = df[COLS_IN_USE]
 
         start_time = int(df.iloc[-1]['OpenTime']) + 60000
 
@@ -120,7 +120,7 @@ class Executioner:
 
     def _get_token_klines_since_time(self, token, time_as_ms):
         klines = self._client.get_klines(
-            symbol=token + SELL_TOKEN,
+            symbol=token + QUOTE_TOKEN,
             interval=self._client.KLINE_INTERVAL_1MINUTE,
             limit=500,
             startTime=time_as_ms
