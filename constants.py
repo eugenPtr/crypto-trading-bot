@@ -1,4 +1,4 @@
-TRADED_TOKENS = ['BTC', 'BNB']
+BASE_TOKENS = ['BTC', 'BNB']
 QUOTE_TOKEN = 'USDT'
 COL_NAMES = ['OpenTime', 'Open', 'High', 'Low', 'Close', 'Volume', 'CloseTime', 'QuoteVolume', 'NumTrades', 'TakerBuyBaseVol', 'TakerBuyQuoteVol', 'Ignore']
 COLS_IN_USE = ['OpenTime', 'Open', 'High', 'Low', 'Close', 'Volume']

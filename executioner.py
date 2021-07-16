@@ -21,7 +21,7 @@ class Executioner:
         '''
 
         wallet = {}
-        for token in TRADED_TOKENS:
+        for token in BASE_TOKENS:
             balance = self._client.get_asset_balance(token)
             wallet[token] = float(self._client.get_asset_balance(token)['free'])
         return wallet
@@ -37,7 +37,7 @@ class Executioner:
 
         klines_df_dict = {}
         open_time_of_last_kline = 0
-        for token in TRADED_TOKENS:
+        for token in BASE_TOKENS:
             klines_df = self._get_bootstrap_klines_df(token, file_path + token + ".csv")
             open_time_of_last_kline = int(klines_df.iloc[-1]['OpenTime'])
             klines_df['OpenTime'] = pd.to_datetime(klines_df['OpenTime'], unit='ms')
@@ -59,7 +59,7 @@ class Executioner:
 
         klines_df_dict = {}
         open_time_of_last_kline = 0
-        for token in TRADED_TOKENS:
+        for token in BASE_TOKENS:
             start_time = self._open_time_of_last_kline + 60000
             df = self._get_and_save_latest_klines_dataframe(token, file_path + token + ".csv", start_time)
             open_time_of_last_kline = int(df.iloc[-1]['OpenTime'])
@@ -87,8 +87,8 @@ class Executioner:
         df = pd.DataFrame(columns=COLS_IN_USE)
         while klines:
             new_df = pd.DataFrame(klines, columns=COL_NAMES)
+            new_df.to_csv(filename, index=False, header=False, mode="a")
             new_df = new_df[COLS_IN_USE]
-            new_df.to_csv(filename, index=False, header=None, mode="a")
             frames = [df, new_df]
             df = pd.concat(frames, sort=False)
             start_time = int(new_df.iloc[-1]['OpenTime']) + 60000

@@ -24,8 +24,8 @@ if __name__ == '__main__':
     dataset = executioner.build_bootstrap_dataset()
     print(dataset)
 
-    spans = [20, 50, 100]
-    model = bisnita.BișnițăModel(spans, klines_per_day=60 * 24)
+    span = 50
+    model = bisnita.BișnițăModel(span, BASE_TOKENS, QUOTE_TOKEN)
     weights = model.mama_omida(dataset)
 
     while True:
@@ -45,7 +45,7 @@ if __name__ == '__main__':
 
 
             #Sell
-            for base_token in TRADED_TOKENS:
+            for base_token in BASE_TOKENS:
                 print('USDT balance: %f' % executioner.get_quote_token_balance())
                 print('%s balance: %f' % (base_token, wallet[base_token]))
                 print('target balance %f \n' % target[base_token])
@@ -79,7 +79,7 @@ if __name__ == '__main__':
                 buy_scaling = BUY_SCALING_STATIC * np.clip(quote_token_balance/amount_to_buy, a_max=1.0, a_min=None)
 
             #Buy
-            for base_token in TRADED_TOKENS:
+            for base_token in BASE_TOKENS:
                 print('USDT balance: %f' % executioner.get_quote_token_balance())
                 print('%s balance: %f' % (base_token, wallet[base_token]))
                 print('target balance %f \n' % target[base_token])
